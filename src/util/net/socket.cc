@@ -1,6 +1,7 @@
 #include "util/net/socket.h"
 
 #include <netdb.h>
+#include <stdio.h>
 #include <sys/socket.h>
 #include <unistd.h>
 #include <cstring>
@@ -9,6 +10,9 @@
 Socket::Socket() {}
 
 bool Socket::Connect(const std::string host, const unsigned int port) {
+  if (IsValid())
+    Close(); // Close currently open socket before opening a new one.
+
   // Set options for address resolution.
   addrinfo hints;
   memset(&hints, 0, sizeof(hints));
@@ -75,4 +79,62 @@ bool Socket::IsValid() const {
 
 int Socket::get_sock() const {
   return sock_;
+}
+
+bool Socket::Send(const std::string msg) const {
+  if (!IsValid())
+    return false;
+
+  // FIXME: This assumes that either the whole message is sent in one step or
+  // the function fails. send returns the number of bytes sent and should be
+  // evaluated, possibly we need multiple sends to transfer the whole message.
+  int status = send(sock_, msg.c_str(), msg.size(), 0);
+  if (status == -1) {
+    perror("Socket::Send failed");
+    return false;
+  }
+
+  return true;
+}
+
+std::string *Socket::Recv() const {
+  if (!IsValid())
+    return nullptr;
+
+  // Buffer size + 1 for termination of full buffer.
+  char *buff = new char[buff_size_ + 1];
+  std::string *msg = new std::string();
+
+  int status;
+  while (true) {
+    status = recv(sock_, buff, buff_size_, 0);
+
+    // status contains the number of bytes received if everything went well.
+    if (status > 0) {
+      // Null-terminate the received string in the buffer and append to message.
+      buff[status] = '\0';
+      *msg = *msg + buff;
+    }
+    else {
+      // If there was an error, report it, else we received 0 bytes and thus are
+      // done with this transmission.
+      if (status == -1)
+        perror("Recv failed");
+      break;
+    }
+  }
+  delete buff;
+
+  // If there was an error during recv, we signal that by returning a nullptr.
+  // The part of the message that was possibly already received is then lost.
+  // Since it is incomplete, that should be ok. But it is a design decision,
+  // change this behaviour if you want, only if you return a message on error
+  // then how will the error be signaled to the caller?
+  if (status == -1) {
+    delete msg;
+    return nullptr;
+  }
+
+  // Everything went well, return message.
+  return msg;
 }
