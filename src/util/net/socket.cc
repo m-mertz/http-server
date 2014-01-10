@@ -123,7 +123,7 @@ std::string *Socket::Recv() const {
       break;
     }
   }
-  delete buff;
+  delete[] buff;
 
   // If there was an error during recv, we signal that by returning a nullptr.
   // The part of the message that was possibly already received is then lost.
