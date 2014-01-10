@@ -6,7 +6,7 @@ set (CMAKE_BUILD_TYPE Debug)
 
 # Enable compiler warnings with -Wall if gcc is used as compiler.
 if (CMAKE_COMPILER_IS_GNUCC)
-  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pedantic -Wall -Wextra -Wshadow -Weffc++")
 endif (CMAKE_COMPILER_IS_GNUCC)
 
 # Function for finding all .cc files in a directory recursively and
@@ -22,3 +22,4 @@ endfunction ()
 
 # Process subdirectories containing the components.
 add_subdirectory (server)
+add_subdirectory (client)
