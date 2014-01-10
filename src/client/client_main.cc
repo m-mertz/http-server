@@ -1,7 +1,7 @@
 #include <sys/socket.h>
 #include <iostream>
 
-#include "../util/net/socket.h"
+#include "util/net/socket.h"
 
 int main(void) {
   // Create socket and connect to host.

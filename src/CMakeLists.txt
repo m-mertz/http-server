@@ -20,6 +20,10 @@ function(find_cc_sources ARGV RESULT_NAME)
   set(${RESULT_NAME} ${FOUND_SOURCES} PARENT_SCOPE)
 endfunction()
 
+# Add this folder as include dir, so that all includes of project headers can be
+# relative to the project source root.
+include_directories(.)
+
 # Process subdirectories containing the components.
 add_subdirectory(util)
 add_subdirectory(server)
