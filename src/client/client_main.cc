@@ -8,13 +8,13 @@
 
 int main(void) {
   // Set options for address resolution.
-  struct addrinfo hints;
-  memset(&hints, 0, sizeof(struct addrinfo));
+  addrinfo hints;
+  memset(&hints, 0, sizeof(hints));
   hints.ai_family = AF_INET;
   hints.ai_socktype = SOCK_STREAM;
   hints.ai_protocol = IPPROTO_TCP;
 
-  struct addrinfo *res_addrinfo;
+  addrinfo *res_addrinfo;
   int status = getaddrinfo("www.google.com", "80", &hints, &res_addrinfo);
   if (status != 0) {
     std::cerr << "getaddrinfo failed: " << gai_strerror(status) << std::endl;
@@ -22,7 +22,7 @@ int main(void) {
   }
 
   int sock;
-  struct addrinfo *rp;
+  addrinfo *rp;
   for (rp = res_addrinfo; rp != nullptr; rp = rp->ai_next) {
     // Try to create socket, continue to next addrinfo if that fails.
     sock = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
@@ -42,8 +42,11 @@ int main(void) {
     exit(EXIT_FAILURE);
   }
 
-  freeaddrinfo(res_addrinfo);
+  freeaddrinfo(res_addrinfo); // No longer needed, connection has been made.
 
+  // Connection has been established, go do stuff!
+
+  // BEGIN cleanup and exit.
   close(sock);
 
   exit(EXIT_SUCCESS);
