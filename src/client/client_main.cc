@@ -5,6 +5,7 @@
 #include <cstring>
 #include <unistd.h>
 #include <iostream>
+#include "../util/net/socket.h"
 
 int main(void) {
   // Set options for address resolution.

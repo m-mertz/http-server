@@ -1,3 +1,4 @@
-set (SERVER_SRC server_main.cc)
+find_cc_sources(./ SERVER_SRC)
 
-add_executable (server ${SERVER_SRC})
+add_executable(server ${SERVER_SRC})
+target_link_libraries(server util)
