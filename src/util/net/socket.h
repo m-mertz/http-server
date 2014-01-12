@@ -8,7 +8,7 @@ class Socket {
   Socket();
   ~Socket();
   bool Connect(const std::string &host, const unsigned int &port);
-  bool Bind(const unsigned int &port);
+  bool Bind(const unsigned short &port);
   void Close();
   bool IsValid() const;
   int get_sock() const;

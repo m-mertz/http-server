@@ -72,44 +72,26 @@ bool Socket::Connect(const std::string &host, const unsigned int &port) {
   return true;
 }
 
-bool Socket::Bind(const unsigned int &port) {
+bool Socket::Bind(const unsigned short &port) {
   if (IsValid())
     Close(); // Close currently open socket before opening a new one.
 
-  // Set options for address resolution.
-  addrinfo hints;
-  memset(&hints, 0, sizeof(hints));
-  hints.ai_family = AF_INET;
-  hints.ai_socktype = SOCK_STREAM;
-  hints.ai_protocol = IPPROTO_TCP;
-  hints.ai_flags = AI_PASSIVE; // Bind to own IP if none is provided.
-
-  // Get addrinfo struct with own IP and specified port.
-  addrinfo *res_addrinfo = nullptr;
-  int status = getaddrinfo(nullptr, std::to_string(port).c_str(), &hints,
-                           &res_addrinfo);
-  if (status != 0) {
-    std::cerr << "Socket::Bind: getaddrinfo failed: " << gai_strerror(status)
-              << std::endl;
-    // Release possibly allocated resources before returning.
-    if (res_addrinfo != nullptr)
-      freeaddrinfo(res_addrinfo);
-
-    return false;
-  }
-
   // Create socket, check for failure.
-  int sock = socket(res_addrinfo->ai_family, res_addrinfo->ai_socktype,
-                    res_addrinfo->ai_protocol);
+  int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
   if (sock == -1) {
     perror("Socket::Bind: creating the socket failed");
-    freeaddrinfo(res_addrinfo);
     return false;
   }
 
+  // Create configuration struct for bind call.
+  sockaddr_in my_addr;
+  memset(&my_addr, 0, sizeof(my_addr));
+  my_addr.sin_family = AF_INET;
+  my_addr.sin_addr.s_addr = htonl(INADDR_ANY); // Allow any IP address.
+  my_addr.sin_port = htons(port);
+
   // Bind to selected port, check for failure.
-  status = bind(sock, res_addrinfo->ai_addr, res_addrinfo->ai_addrlen);
-  freeaddrinfo(res_addrinfo); // Cleanup, not needed anymore.
+  int status = bind(sock, reinterpret_cast<sockaddr *>(&my_addr), sizeof(my_addr));
   if (status == -1) {
     perror("Socket::Bind: bind call failed");
     close(sock); // Close the new socket before returning.
