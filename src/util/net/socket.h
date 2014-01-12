@@ -1,5 +1,5 @@
-#ifndef UTIL_NET_SOCKET_H
-#define UTIL_NET_SOCKET_H
+#ifndef HTTPSERVER_UTIL_NET_SOCKET_H_
+#define HTTPSERVER_UTIL_NET_SOCKET_H_
 
 #include <string>
 
@@ -25,4 +25,4 @@ class Socket {
   int sock_ = -1;
 };
 
-#endif // UTIL_NET_SOCKET_H
+#endif // HTTPSERVER_UTIL_NET_SOCKET_H_
