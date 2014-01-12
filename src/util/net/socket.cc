@@ -72,7 +72,7 @@ bool Socket::Connect(const std::string &host, const unsigned int &port) {
   return true;
 }
 
-bool Socket::Bind(const unsigned short &port) {
+bool Socket::Bind(const unsigned short &port, const bool &reuse_port) {
   if (IsValid())
     Close(); // Close currently open socket before opening a new one.
 
@@ -96,6 +96,16 @@ bool Socket::Bind(const unsigned short &port) {
     perror("Socket::Bind: bind call failed");
     close(sock); // Close the new socket before returning.
     return false;
+  }
+
+  // If enabled, set socket option for reusing the port. Return false on failure.
+  if (reuse_port) {
+    int yes = 1;
+    if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) == -1) {
+      perror("Socket::Bind: setsockopt failed");
+      close(sock);
+      return false;
+    }
   }
 
   // Everything ok, store socket file descriptor and signal success.
