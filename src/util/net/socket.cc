@@ -9,7 +9,14 @@
 
 Socket::Socket() {}
 
-bool Socket::Connect(const std::string host, const unsigned int port) {
+Socket::~Socket() {
+  // Safety measure: when socket object is destroyed, the contained socket is
+  // closed.
+  if (IsValid())
+    Close();
+}
+
+bool Socket::Connect(const std::string &host, const unsigned int &port) {
   if (IsValid())
     Close(); // Close currently open socket before opening a new one.
 
@@ -61,6 +68,55 @@ bool Socket::Connect(const std::string host, const unsigned int port) {
   }
 
   // Connection has been made, store socket file descriptor and return true.
+  sock_ = sock;
+  return true;
+}
+
+bool Socket::Bind(const unsigned int &port) {
+  if (IsValid())
+    Close(); // Close currently open socket before opening a new one.
+
+  // Set options for address resolution.
+  addrinfo hints;
+  memset(&hints, 0, sizeof(hints));
+  hints.ai_family = AF_INET;
+  hints.ai_socktype = SOCK_STREAM;
+  hints.ai_protocol = IPPROTO_TCP;
+  hints.ai_flags = AI_PASSIVE; // Bind to own IP if none is provided.
+
+  // Get addrinfo struct with own IP and specified port.
+  addrinfo *res_addrinfo = nullptr;
+  int status = getaddrinfo(nullptr, std::to_string(port).c_str(), &hints,
+                           &res_addrinfo);
+  if (status != 0) {
+    std::cerr << "Socket::Bind: getaddrinfo failed: " << gai_strerror(status)
+              << std::endl;
+    // Release possibly allocated resources before returning.
+    if (res_addrinfo != nullptr)
+      freeaddrinfo(res_addrinfo);
+
+    return false;
+  }
+
+  // Create socket, check for failure.
+  int sock = socket(res_addrinfo->ai_family, res_addrinfo->ai_socktype,
+                    res_addrinfo->ai_protocol);
+  if (sock == -1) {
+    perror("Socket::Bind: creating the socket failed");
+    freeaddrinfo(res_addrinfo);
+    return false;
+  }
+
+  // Bind to selected port, check for failure.
+  status = bind(sock, res_addrinfo->ai_addr, res_addrinfo->ai_addrlen);
+  freeaddrinfo(res_addrinfo); // Cleanup, not needed anymore.
+  if (status == -1) {
+    perror("Socket::Bind: bind call failed");
+    close(sock); // Close the new socket before returning.
+    return false;
+  }
+
+  // Everything ok, store socket file descriptor and signal success.
   sock_ = sock;
   return true;
 }

@@ -6,7 +6,9 @@
 class Socket {
  public:
   Socket();
-  bool Connect(const std::string host, const unsigned int port);
+  ~Socket();
+  bool Connect(const std::string &host, const unsigned int &port);
+  bool Bind(const unsigned int &port);
   void Close();
   bool IsValid() const;
   int get_sock() const;
