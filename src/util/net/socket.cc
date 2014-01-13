@@ -83,6 +83,16 @@ bool Socket::Bind(const unsigned short &port, const bool &reuse_port) {
     return false;
   }
 
+  // If enabled, set socket option for reusing the port. Return false on failure.
+  if (reuse_port) {
+    int yes = 1;
+    if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) == -1) {
+      perror("Socket::Bind: setsockopt failed");
+      close(sock);
+      return false;
+    }
+  }
+
   // Create configuration struct for bind call.
   sockaddr_in my_addr;
   memset(&my_addr, 0, sizeof(my_addr));
@@ -96,16 +106,6 @@ bool Socket::Bind(const unsigned short &port, const bool &reuse_port) {
     perror("Socket::Bind: bind call failed");
     close(sock); // Close the new socket before returning.
     return false;
-  }
-
-  // If enabled, set socket option for reusing the port. Return false on failure.
-  if (reuse_port) {
-    int yes = 1;
-    if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) == -1) {
-      perror("Socket::Bind: setsockopt failed");
-      close(sock);
-      return false;
-    }
   }
 
   // Everything ok, store socket file descriptor and signal success.
