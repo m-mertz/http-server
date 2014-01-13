@@ -21,7 +21,16 @@ int main(void) {
     }
 
     // Print info about new connection.
-    std::cout << "Got a new connection!" << std::endl;
+    std::cout << "";
+
+    std::string *hostname = new_sock->GetPeerName();
+    if (hostname == nullptr) {
+      std::cout << "Got a new connection, but cannot determine the host.."
+                << std::endl;
+    } else {
+      std::cout << "Got a new connection from " << *hostname << std::endl;
+      delete hostname;
+    }
 
     // Send something to caller.
 

@@ -11,6 +11,7 @@ class Socket {
   bool Bind(const unsigned short &port, const bool &reuse_port);
   bool Listen(const unsigned short &backlog_size) const;
   Socket *Accept() const;
+  std::string *GetPeerName() const;
   void Close();
   bool IsValid() const;
   int get_sock() const;

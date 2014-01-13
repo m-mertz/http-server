@@ -142,6 +142,29 @@ Socket *Socket::Accept() const {
   return new Socket(new_sock);
 }
 
+std::string *Socket::GetPeerName() const {
+  if (!IsValid())
+    return nullptr; // Only useful if we have a connection.
+
+  sockaddr addr;
+  socklen_t len = sizeof(addr);
+  if (getpeername(sock_, &addr, &len) == -1) {
+    perror("Socket::GetPeerName: getpeername call failed");
+    return nullptr;
+  }
+
+  char name[1025]; // NI_MAXHOST, see man 3 getnameinfo.
+  int status = getnameinfo(&addr, len, name, sizeof(name), nullptr, 0,
+                           NI_NUMERICHOST); // I want the IP address.
+  if (status != 0) {
+    std::cerr << "Socket::GetPeerName: getnameinfo call failed: "
+              << gai_strerror(status) << std::endl;
+    return nullptr;
+  }
+
+  return new std::string(name);
+}
+
 void Socket::Close() {
   close(sock_);
   sock_ = -1; // Set file descriptor back to invalid value to mark closed state.
