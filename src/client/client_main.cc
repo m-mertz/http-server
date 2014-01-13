@@ -16,16 +16,16 @@ int main(void) {
   // sent, so it is easier to detect the end of message. If you choose HTTP/1.1
   // here, you must also adapt the reception process or this program will not
   // terminate!
-  sock.Send("GET / HTTP/1.0\nHost: www.google.com\n\n");
+  if (!sock.Send("GET / HTTP/1.0\nHost: www.google.com\n\n")) {
+    std::cerr << "Could not send request" << std::endl;
+    exit(EXIT_FAILURE);
+  }
 
   // Receive and print reply from server.
   std::string *reply;
   if ((reply = sock.Recv()) != nullptr)
     std::cout << *reply << std::endl;
   delete reply;
-
-  // BEGIN cleanup and exit.
-  sock.Close();
 
   exit(EXIT_SUCCESS);
 }
