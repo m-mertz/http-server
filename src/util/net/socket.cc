@@ -113,6 +113,35 @@ bool Socket::Bind(const unsigned short &port, const bool &reuse_port) {
   return true;
 }
 
+bool Socket::Listen(const unsigned short &backlog_size) const {
+  if (!IsValid())
+    return false; // Need to already have an open socket.
+
+  if (listen(sock_, backlog_size) == -1) {
+    perror("Socket::Listen: listen call failed");
+    return false;
+  }
+
+  return true;
+}
+
+Socket *Socket::Accept() const {
+  if (!IsValid()) {
+    std::cerr << "Socket::Accept: IsValid false, cannot accept a connection.";
+    return nullptr;
+  }
+
+  int new_sock = accept(sock_, nullptr, nullptr);
+  if (new_sock == -1) {
+    perror("Socket::Accept: accept call failed");
+    return nullptr;
+  }
+
+  // Return pointer to a new socket object referencing the new socket of the
+  // accepted connection. Cleanup of this object is left to the caller!
+  return new Socket(new_sock);
+}
+
 void Socket::Close() {
   close(sock_);
   sock_ = -1; // Set file descriptor back to invalid value to mark closed state.
@@ -186,3 +215,5 @@ std::string *Socket::Recv() const {
   // Everything went well, return message.
   return msg;
 }
+
+Socket::Socket(const int &sock) : sock_(sock) {}

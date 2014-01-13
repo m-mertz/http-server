@@ -9,6 +9,8 @@ class Socket {
   ~Socket();
   bool Connect(const std::string &host, const unsigned int &port);
   bool Bind(const unsigned short &port, const bool &reuse_port);
+  bool Listen(const unsigned short &backlog_size) const;
+  Socket *Accept() const;
   void Close();
   bool IsValid() const;
   int get_sock() const;
@@ -16,6 +18,9 @@ class Socket {
   std::string *Recv() const;
 
  private:
+  // Private constructor for creating a new socket object for an existing
+  // socket file descriptor.
+  Socket(const int &sock);
   // Disallow copy and assign.
   Socket(const Socket&);
   void operator=(const Socket&);
